@@ -4,17 +4,27 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
+
 const PORT = process.env.PORT || 3001;
 
+const API_Key = process.env.API_Key;
+
+const API_Host = process.env.API_Host;
+
+
+
 const app = express();
+app.use(cors());
+
+
 
 const options = {
   method: 'GET',
   url: 'https://theaudiodb.p.rapidapi.com/track-top10.php',
-  params: {s: 'taylor swift'},
+  params: {s: 'Taylor Swift'},
   headers: {
-    'X-RapidAPI-Key': '395e7984a7msh7825449fd397da4p1a937bjsn0206e27ed8e7',
-    'X-RapidAPI-Host': 'theaudiodb.p.rapidapi.com'
+    'X-RapidAPI-Key': API_Key,
+    'X-RapidAPI-Host': API_Host
   }
 };
 
@@ -23,12 +33,11 @@ app.get('/test', (request, response) => {
 
 })
 
-app.get('/artist/:artistName', async (req, res) => {
-  options.params = {s: req.params.artistName};
+app.get('/artist', async (req, res) => {
+  //options.params = {s: req.params.artistName};
   try {
     const songData = await axios.request(options);
     res.json(songData.data.track);
-    //console.log(res.data.track.length);
   } catch (error) {
     console.error(error);
   }
