@@ -5,17 +5,18 @@ const jwksClient = require('jwks-rsa'); // auth
 // We can simply "use()" this in our server
 // When a user is validated, request.user will contain their information
 // Otherwise, this will force an error
-function verifyUser(request, response, next) {
+async function verifyUser(request, response, next) {
 
   function valid(err, user) {
     request.user = user;
-    console.log(request.user);
     next();
   }
 
+  
   try {
-    const token = request.headers.authorization.split(' ')[1];
+    const token = await request.headers.authorization.split(' ')[1];
     jwt.verify(token, getKey, {}, valid);
+    console.log('Authorized');
   } catch (error) {
     next('Not Authorized');
   }
@@ -33,7 +34,6 @@ const client = jwksClient({
 
 // Match the JWT's key to your Auth0 Account Key so we can validate it
 function getKey(header, callback) {
-  
   client.getSigningKey(header.kid, function (err, key) {
     const signingKey = key.publicKey || key.rsaPublicKey;
     callback(null, signingKey);
