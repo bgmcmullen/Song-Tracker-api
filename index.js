@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const SongModel = require('./SongModel');
 const bodyParser = require('body-parser');
+const verifyUser = require('./auth/authorize');
 
 
 const PORT = process.env.PORT || 3001;
@@ -24,7 +25,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 
-
+//app.use(verifyUser);
 
 
 app.get('/test', (request, response) => {
@@ -63,26 +64,30 @@ app.get('/favorites', async (req, res) => {
 })
 
 app.delete('/favorites/:songId', async (req, res) => {
-  console.log(req.params.songId);
-  // Check if a valid song ID is provided
-  if (!req.params.songId) {
-    res.status(404).send('Please provide a valid song ID');
-    return;
+  try {
+    // Check if a valid song ID is provided
+    if (!req.params.songId) {
+      return res.status(400).send('Please provide a valid song ID');
+    }
+
+    // Attempt to delete the song by ID
+    const result = await SongModel.findByIdAndDelete(req.params.songId);
+
+    // Check if the song was found and deleted
+    if (!result) {
+      return res.status(404).send('Song not found');
+    }
+
+    // Send a success response
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting song:', error);
+    res.status(500).send('Internal Server Error');
   }
-
-
-  // Attempt to delete the song by ID
-  const result = await SongModel.findByIdAndDelete(req.params.songId);
-
-  // Check if the song was found and deleted
-  if (!result) {
-    res.status(404).send('Song not found');
-    return;
-
-  }
-})
+});
 
 app.post('/artist', async (req, res) => {
+  console.log(req);
 
   try {
 
