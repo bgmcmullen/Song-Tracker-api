@@ -25,7 +25,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 
-//app.use(verifyUser);
+app.use(verifyUser);
 
 
 app.get('/test', (request, response) => {
@@ -54,8 +54,9 @@ app.get('/artist/:artistName', async (req, res) => {
 })
 
 app.get('/favorites', async (req, res) => {
+  let queryObject = {email: req.user.email};
   try {
-    let documents = await SongModel.find()
+    let documents = await SongModel.find(queryObject);
     res.json(documents);
   } catch (e) {
     console.log('failed to find songs');
@@ -89,9 +90,13 @@ app.delete('/favorites/:songId', async (req, res) => {
 app.post('/artist', async (req, res) => {
   console.log(req);
 
+  let songObject = req.body;
+
+  let email = req.user.email;
+
   try {
 
-    let song = new SongModel(req.body);
+    let song = new SongModel({email, songObject});
 
     await song.save();
 
