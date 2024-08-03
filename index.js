@@ -9,6 +9,36 @@ const SongModel = require('./SongModel');
 const bodyParser = require('body-parser');
 const verifyUser = require('./auth/authorize');
 
+const OpenAI = require("openai");
+
+// Create an instance of the OpenAI class
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+async function aiTest() {
+  try {
+    const stream = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: "Tell me about this tracks's production: Love Story by Taylor Swift" }],
+      stream: true,
+    });
+
+    let responseString = '';
+
+    for await (const chunk of stream) {
+      responseString += chunk.choices[0]?.delta?.content || "";
+    }
+    return responseString;
+  } catch (error) {
+    console.error("Error:", error);
+  }
+
+}
+
+
+
+
 // Set up environment variables
 const PORT = process.env.PORT || 3001;
 const API_Key = process.env.API_Key;
@@ -24,12 +54,17 @@ const app = express();
 // Middleware
 app.use(cors()); // Enable CORS
 app.use(bodyParser.json()); // Parse incoming JSON requests
-app.use(verifyUser); // Authorization middleware
+// app.use(verifyUser); // Authorization middleware
 
 // Test endpoint
 app.get('/test', (request, response) => {
   response.send('test request received');
 });
+
+app.get('/testChatgpt', async (req, res) => {
+  response = await aiTest();
+  res.json(response);
+})
 
 // Endpoint to get top 10 tracks by artist name
 app.get('/artist/:artistName', async (req, res) => {
