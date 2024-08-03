@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const SongSchema = new mongoose.Schema({
   email: {
     type: String,
+    required: true
   },
 
   songObject: {
